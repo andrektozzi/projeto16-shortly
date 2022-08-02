@@ -7,4 +7,4 @@ const signUpSchema = joi.object({
     confirmPassword: joi.string().required()
 });
 
-export default signUpSchema;
+export default signUpSchema

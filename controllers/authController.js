@@ -1,5 +1,6 @@
 import connection from "../dbStrategy/database.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export async function signUp(req, res) {
     const passwordHash = bcrypt.hashSync(req.body.password, 10);
@@ -28,6 +29,33 @@ export async function signUp(req, res) {
                 [name, email, password]
         );
         res.sendStatus(201);
+    } catch (error) {
+        return res.sendStatus(500);
+    }
+}
+
+export async function signIn(req, res) {
+    const { email, password } = req.body;
+
+    try {
+        const { rows: user } = await connection.query(
+            `SELECT * FROM users WHERE email = $1;`, [email]
+        );
+
+        if(user.length === 0) {
+            return res.sendStatus(401);
+        }
+
+        const checkPassword = bcrypt.compareSync(password, user[0].password);
+
+        if(!checkPassword) {
+            return res.sendStatus(401);
+        }
+
+        const secretKey = process.env.JWT_SECRET;
+        const token = jwt.sign({ id: user[0]._id }, secretKey);
+
+        return res.status(200).send({ token });
     } catch (error) {
         return res.sendStatus(500);
     }
