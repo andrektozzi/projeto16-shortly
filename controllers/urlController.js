@@ -74,3 +74,34 @@ export async function openUrl(req, res) {
         return res.sendStatus(400);
     }
 }
+
+export async function deleteUrl(req, res) {
+    const idUser = res.locals.id;
+    const idUrl = req.params.id;
+
+    try {
+        const { rows: url } = await connection.query(
+            `SELECT * FROM urls WHERE id = $1;`,
+            [idUrl]
+        );
+
+        if(url.length === 0) {
+            return res.sendStatus(404);
+        }
+
+        if(url[0].userId !== idUser) {
+            return res.sendStatus(401);
+        }
+
+        await connection.query(
+            `DELETE FROM urls
+                WHERE id = $1
+            `,
+            [idUrl]
+        );
+
+        return res.sendStatus(204);
+    } catch (error) {
+        return res.sendStatus(400);
+    }
+}
