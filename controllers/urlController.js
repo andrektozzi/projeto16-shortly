@@ -39,3 +39,38 @@ export async function getUrl(req, res) {
         return res.sendStatus(400);
     }
 }
+
+export async function openUrl(req, res) {
+    const { shortUrl } = req.params;
+
+    try {
+        const { rows: url } = await connection.query(
+            `SELECT * FROM urls WHERE "shortUrl" = $1;`,
+            [shortUrl]
+        );
+
+        if(url.length === 0) {
+            return res.sendStatus(404);
+        }
+
+        await connection.query(
+            `UPDATE urls
+                SET "visitCount" = "visitCount" + 1
+                WHERE "shortUrl" = $1;
+            `,
+            [shortUrl]
+        );
+
+        await connection.query(
+            `UPDATE users
+                SET "visitCount" = "visitCount" + 1
+                WHERE id = $1
+            `,
+            [url[0].userId]
+        );
+
+        return res.redirect(url[0].url);
+    } catch (error) {
+        return res.sendStatus(400);
+    }
+}
