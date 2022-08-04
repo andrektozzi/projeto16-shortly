@@ -30,7 +30,7 @@ export async function signUp(req, res) {
         );
         res.sendStatus(201);
     } catch (error) {
-        return res.sendStatus(500);
+        return res.status(500).send(error);
     }
 }
 
@@ -57,6 +57,6 @@ export async function signIn(req, res) {
 
         return res.status(200).send({ token });
     } catch (error) {
-        return res.sendStatus(500);
+        return res.status(500).send(error);
     }
 }
