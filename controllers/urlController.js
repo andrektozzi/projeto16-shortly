@@ -17,7 +17,7 @@ export async function addUrl(req, res) {
         );
         return res.status(201).send({ shortUrl });
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send(error.message);
     }
 }
 
@@ -36,7 +36,7 @@ export async function getUrl(req, res) {
 
         return res.status(200).send(url);
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send(error.message);
     }
 }
 
@@ -71,7 +71,7 @@ export async function openUrl(req, res) {
 
         return res.redirect(url[0].url);
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send(error.message);
     }
 }
 
