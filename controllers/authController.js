@@ -1,6 +1,6 @@
-import connection from "../dbStrategy/database.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { userRepository } from "../repositories/userRepositories.js"
 
 export async function signUp(req, res) {
     const passwordHash = bcrypt.hashSync(req.body.password, 10);
@@ -12,37 +12,26 @@ export async function signUp(req, res) {
         return res.status(422).send("As senhas não conferem!");
       }
   
-      const { rows: userExist } = await connection.query(
-        `SELECT * FROM users WHERE email = $1;`,
-        [user.email]
-      );
+      const { rows: userExist } = await userRepository.getUser(email);
   
       if (userExist.length !== 0) {
         return res.sendStatus(409);
       }
   
-      await connection.query(
-        `INSERT INTO users (
-                name, 
-                email, 
-                password) 
-              VALUES ($1, $2, $3);`,
-        [name, email, password]
-      );
+      await userRepository.addUser(name, email, password);
   
       res.sendStatus(201);
     } catch (error) {
-      return res.status(500).send(error);
+      return res.status(500).send(error.message);
     }
 }
 
 export async function signIn(req, res) {
-    const { email, password } = req.body;
+    
 
     try {
-        const { rows: user } = await connection.query(
-            `SELECT * FROM users WHERE email = $1;`, [email]
-        );
+        const { email, password } = req.body;
+        const { rows: user } = await userRepository.getUser(email);
 
         if(user.length === 0) {
             return res.sendStatus(401);
@@ -59,6 +48,6 @@ export async function signIn(req, res) {
 
         return res.status(200).send({ token });
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send(error.message);
     }
 }
